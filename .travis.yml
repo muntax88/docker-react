@@ -1,13 +1,41 @@
 language: generic
 
+#Anytime we use docker, we're using ourselves super user permissions
 sudo : required
 
-
+#telling travis CI to automatically install a copy of docker into our running container
 services:
   - docker
 
+ #below is the command that should be executed to build our docker image  using Dockerfile.dev in our current working directory using "."
+  #also providing it a tag name using -t of "muntax/docker-react" so we don't have to worry about a long ID
 before_install:
   - docker build -t muntax/docker-react -f Dockerfile.dev .
-
+  -
+#script section contains all the commands needed to run the test suites
 script:
   - docker run -e CI=true muntax/docker-react npm run test
+  -
+#deploy section is for travis ci to give instructions how to deplay application to aws and other functions
+deploy:
+  provider: elasticbeanstalk
+  #region depends on where you create elasticbeanstalk service in aws
+  region: "eu-central-1"
+  #specify the name of our app from aws elasticbeanstalk service
+  app: "docker-react"
+  #environment name from aws
+  env: "Dockerreact-env"
+  #file name as a zip which travis ci will upload to aws s3 bucket
+  bucket_name: "elasticbeanstalk-eu-central-1-040110308627"
+  #bucket path name is the same as for app
+  bucket_path: "docker-react"
+  #any time we push app to the master branch it means it is time to deploy:
+  on:
+    branch: master
+
+
+  #key id and secret access key generated through AWS IAM policy and saved in travis ci.com webpage settings->environment_variables
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+
+
