@@ -1,0 +1,19 @@
+version: '3'
+services:
+  web:
+    build:
+      context: . # . - means current working directory
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - /app/node_modules
+      - .:/app # . means to use current directory outside the container to map to /app which is inside the container (in other words to create a reference between these two folders)
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /app/node_modules
+      - .:/app
+    command: ["npm","run","test"]
